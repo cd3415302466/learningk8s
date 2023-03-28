@@ -52,6 +52,14 @@ kubeadm join kubeapi.magedu.com:6443 --token 32hb2t.pneh4vhqtmqpqop5 \
         --discovery-token-ca-cert-hash sha256:58e44e8a4d8e189ade5ecd67640cde1f30f2f40f1ae22bacfe0aa3695846aa33 --cri-socket unix:///run/cri-dockerd.sock
 ```
 
+添加pod
+
+```bash
+create deployment demoapp --image ikubernetes/demoapp:v1.0 --replicas=6
+#添加测试pod
+kubectl run client-$RANDOM --image ikubernetes/admin-box:v1.2 --restart=Never -it --commond -- /bin/sh
+```
+
 变更网络插件后
 
 ```bash
