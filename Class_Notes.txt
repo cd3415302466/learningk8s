@@ -1,0 +1,683 @@
+
+
+分布式服务治理框架
+    Spring Cloud 
+        Spring Cloud Netflix
+        Spring Cloud Alibaba
+        Spring Cloud 
+    Dubbo
+
+    不可变基础设施
+
+容器编排
+    DOcker:
+        Swarm, Machine, Compose 
+    Mesos： DC/OS
+        Marathon
+    Kubernetes：
+        Borg
+
+软件架构：
+    单体应用 --> 分层架构（MVC）--> 垂直切分（小单体）--> 分布式SOA --> 微服务（单一职能）--> Function
+
+分布式应用：
+    A --> B --> C --> D 
+
+    应对网络的不可靠性：
+        服务注册、服务发现
+        负载均衡
+        超时/重试/限流/熔断
+        ……
+
+        SDK
+
+    微服务的服务治理框架
+        Spring Cloud Netflix/Alibaba
+
+        Service Mesh：服务网格
+            Istio
+
+
+    应用容器：交付的形式Image
+        容器编排系统：
+            Kubernetes
+
+            Docker:
+                Docker Engine
+                Containerd --> CNCF（Cloud Native Computing Fundation）
+                RunC
+
+                EE --> Mirantis
+
+            CoreOS --> RedHat --> IBM
+
+    命令式编程：参与每个处理
+    声明式编程：终态声明，具体的实现过程，有一个底层程序自动完成
+        API: RESTful 
+
+        Deployment: 部署
+            API
+            Controller 
+
+            Wordpress: 5
+                1000 * 5 * 80% 
+                20%
+
+        HorizontalPodAutoScaler
+            API
+            Controller 
+
+        Service: 服务发现 和 负载均衡
+            API 
+            Controller 
+
+    Kubernetes组件：
+        Master
+            API Server
+                声明式API接口的服务入口
+            Scheduler
+            Controller Manager
+            Etcd
+        Worker 
+            Kubelet 
+            Kube Proxy 
+                iptables
+                ipvs 
+        AddOns
+            Network Plugin:
+                Flannel
+                ProjectCalico
+                Cilium
+                WeaveNet
+                ...
+            Cluster DNS：
+                SkyDNS
+                KubeDNS
+                CoreDNS
+
+            Ingress Controller:
+                Ingress Nginx
+                Traefik
+                Contour
+                Kone
+                Gloo
+                APISIX Ingress
+                ...
+
+            Dashboard:
+                Kubernetes Dashboard 
+                Kuboard
+                ...
+
+            Metrics:
+                Prometheus
+
+            Logs：
+                ELK
+                PLG 
+
+    应用编排的基本逻辑：
+        基于某个工作负载型控制器，创建一个同名的资源
+            Deployment
+                Nginx： 3 
+            StatefulSet
+            DaemonSet
+
+        为由工作负载型控制器编排运行一的一组Pod添加一个Server
+            提供服务发现，负载均衡
+            
+        
+
+        Kubernetes： go编写，开源，CNCF第一个产品
+
+            landscape.cncf.io
+
+    Kubernetes组件的镜像仓库：
+        k8s.gcr.io --> registry.k8s.io
+
+    部署kubectl、kubelet和kubeadm
+
+        apt-get update && apt-get install -y apt-transport-https
+
+        curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - 
+
+        cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+        deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
+        EOF
+
+        apt-get update
+
+        apt-get install -y kubelet kubeadm kubectl
+
+
+  ~# kubeadm init --control-plane-endpoint="kubeapi.magedu.com" -kubernetes-version=v1.26.1 \
+        --pod-network-cidr=10.244.0.0/16 \
+        --service-cidr=10.96.0.0/12 \
+        --token-ttl=0 \
+        --cri-socket unix:///run/cri-dockerd.sock \
+        --upload-certs \
+        --image-repository=registry.aliyuncs.com/google_containers
+
+
+    参考命令列表：
+        创建Deployment部署Nginx： 
+
+            kubectl create deployment nginx --image=nginx:1.22-alpine --replicas=1
+            kubectl get pods
+            kubectl get pods -o wide
+    
+        创建Service暴露Nginx：
+
+            kubectl create service --help
+            kubectl create service nodeport --help
+            kubectl create service nodeport nginx --tcp=80:80
+            kubectl get services
+
+        创建Deployment部署Demoapp：
+
+            kubectl create deployment demoapp --image=ikubernetes/demoapp:v1.0 --replicas=2
+            kubectl get pods
+            kubectl get pods -o wide
+
+        创建Service暴露Demoapp：
+
+            kubectl create serivce nodeport demoapp --tcp=80:80
+            kubectl create service nodeport demoapp --tcp=80:80
+            kubectl get pods
+
+        Demoapp Deployment扩容和缩容：
+
+            kubectl scale deployment demoapp --replicas=5
+            kubectl get pods -o wide
+            kubectl scale deployment demoapp --replicas=3
+            kubectl get pods -o wide
+
+        部署MySQL：
+
+            git clone https://github.com/iKubernetes/learning-k8s.git
+            cd learning-k8s/wordpress/
+
+            kubectl apply -f mysql-ephemeral/
+            kubectl get pods -o wide
+
+            进入Pod中容器的交互式接口，其中的Pod名称要修改为实际的名称：
+                kubectl exec -it mysql-58bfc8ff6-2np4w  -- /bin/sh
+
+        部署Wordpress：
+
+            kubectl apply -f wordpress-apache-ephemeral/
+            kubectl get pods -o wide 
+
+            查看wordpress service的NodePort：
+                kubectl get services wordpress 
+
+        导入Docker镜像的方法：
+            docker image save registry.k8s.io/pause:3.6 -o pause-3.6.tar
+            docker image load -i ./pause-3.6.tar 
+
+    作业：
+        1、部署Kubernetes集群；
+        2、部署Wordpress并访问，完成初始化；
+
+    
+回顾和增强：
+    节点类型：
+        Master：Control Plane
+            API Server: http/https, RESTful API, 声明式API 
+            Scheduler
+            Controller Manager 
+            Etcd 
+        Worker：Data Plane
+            Kubelet  
+                CRI --> Container Runtime 
+                    kubelet (docker-shim) --> Docker Engine --> Containerd (CNCF) --> containerd-shim -->  RunC
+
+                    kubelet --> Containerd (CNCF) --> containerd-shim -->  RunC
+
+                    kubelet --> cri-dockerd --> Docker Engine --> Containerd (CNCF) --> containerd-shim -->  RunC
+
+                    kubelet --> CRI-O (CNCF) -->  RunC
+
+                CNI --> Network Plugin
+                    CoreOS --> Flannel
+                    ProjectCalico 
+                        NetworkPolicy 
+                    Cilium 
+
+                CSI --> Volume Plugin 
+                    In-Tree: kubelet内置插件
+                    Out-of-Tree：第三方插件
+
+            Kube Proxy
+                kubeadm会自动部署的该组件：DaemonSet
+
+    Add-Ons：附件
+        必备：
+            Cluster DNS： 
+                SkyDNS --> KubeDNS --> CoreDNS 
+
+                kubeadm会自动部署的该组件
+
+            Network Plugin:
+                自行选择，手动部署
+
+        重要插件：
+
+            Metrics Server
+
+            Ingress Controller 
+
+            Dashboard
+
+            Prometheus 
+
+            ELK 
+
+    关键特性：
+        以应用为中心现代IT基础设施
+        用于构建其它平台的平台：Platform for Platform 
+            Kubernetes 
+            Kubernetes + Istio 
+            Kubernetes + Knative 
+        云原生的底座，云原生操作系统
+            容器和容器编排
+            微服务架构
+            服务网格
+            不可变基础设施
+            声明式API 
+
+    编排运行应用的关键逻辑：
+        选择一个适用的工作负载型控制器自动问过和编排应用
+            Deployment 
+            StatefulSet
+            DaemonSet
+            Job
+            CronJob
+            ……
+        给守护进程类的服务器应用创建一个Service
+            服务发现：找到该服务相关的所有Pod
+                label seletor: 标签选择器
+            负载均衡：
+                iptables/ipvs 
+
+集群部署：
+    部署方式：
+        集群的各组件（Master和Worker）以二进制方式部署在系统上，以传统的进程管理进行管理
+            借用工具：kubeasz，sealos
+            Kubernetes的二次发行版：Rancher, OpenShift
+            纯手动安装
+
+        静态Pod方式运行各组件，不包括kubelet和docker/contianerd 
+            静态Pod方式运行的：
+                API Server 
+                Scheduler
+                Controller Manger 
+
+                Image Registry：
+                    k8s.gcr.io --> registry.k8s.io
+
+                    解决方案：
+                        1、提前手动准备好所需要所有镜像；
+                            docker image save 
+                            docker image load 
+                        2、使用国内的Image Mirror Sites
+                            --image-repository=registry.aliyuncs.com/google_containers
+                        3、准备科学上网的代理
+                            配置Docker可通过代理访问Internet
+                            /usr/lib/systemd/system/docker.service 
+
+
+            由控制器编排运行组件：
+                Kube Proxy: DaemonSet 
+                CoreDNS： Deployment 
+                Network Plugin：DaemonSet 
+
+    Kubeadm部署集群的过程：
+        初始化控制平面的第一个节点
+            kubeadm init 
+
+            列出要使用的Image：
+
+                kubeadm config images list
+                kubeadm config images list --image-repository=registry.aliyuncs.com/google_containers
+
+            Pull Images：
+                kubeadm config images pull --cri-socket=unix:///run/cri-dockerd.sock
+                kubeadm config images pull --image-repository=registry.aliyuncs.com/google_containers --cri-socket=unix:///run/cri-dockerd.sock
+
+
+            拉起控制平面第一个节点：
+
+                kubeadm init --control-plane-endpoint kubeapi.magedu.com --kubernetes-version=v1.26.2 --pod-network-cidr=10.244.0.0/16 --service-cidr=10.96.0.0/12 --token-ttl=0 --cri-socket unix:///run/cri-dockerd.sock --upload-certs --image-repository=registry.aliyuncs.com/google_containers
+
+                部署网络插件Flannel：
+
+                    kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+
+        加进其它节点：
+            其它控制平面节点
+            各工作节点
+                kubeadm join 
+
+                加入其它节点时，需要手动添加 --cri-socket=unix:///run/cri-dockerd.sock
+
+        重置集群：
+            kubeadm reset 
+
+            kubeadm reset --cri-socket unix:///run/cri-dockerd.sock && \
+            rm -rf /etc/kubernetes/ /var/lib/kubelet /var/lib/dockershim /var/run/kubernetes /var/lib/cni /etc/cni/net.d /var/lib/etcd
+           
+高可用Kubernetes控制平面:
+
+	Nginx配置示例：
+		stream {
+			upstream apiservers {
+				server k8s-master01.magedu.com:6443 max_fails=2 fail_timeout=30s;
+				server k8s-master02.magedu.com:6443 max_fails=2 fail_timeout=30s;
+				server k8s-master03.magedu.com:6443 max_fails=2 fail_timeout=30s;
+			}
+
+			server {
+				listen 6443;
+				proxy_pass apiservers;
+			}
+		}
+        
+资源管理：
+    RESTful API：
+        resource：资源
+            数据格式
+        object：对象
+            资源的实例化
+            对字段赋值的结果
+
+    声明式API 
+        期望状态 
+        实际状态 
+    
+        控制器的作用：
+            实际状态 无限逼近或完全等同于 期望状态 
+
+    类型元数据：
+        apiVersion：GROUP/VERSION 
+        kind: <资源类型的名称>
+
+            VERSION阶段 
+                alpha
+                beta
+                stable
+
+            GROUP:
+                两类：
+                    核心组：core, 引用时要省略， v1 --> core/v1 
+                        /api/VERSION --> /api/v1/..../pods/pod-name 
+                    其它组: 引用时名称不能省略
+                        /apis/GROUP/VERSION --> /apis/apps/v1/.../deployments/demoapp
+
+        Kind: 
+            API SERVER内置
+            额外扩展 
+
+    对象元数据
+        metadata:
+            name: 名称
+            namespace：隶属的名称空间
+
+    数据：
+        spec: 终态定义，由用户定义
+
+        不同的resource，其spec差别很大，甚至完全不同
+
+
+    实际状态 ：
+        status：由Controller负责自动填充 
+
+    
+
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+            creationTimestamp: null
+            labels:
+                app: demoapp
+            name: demoapp
+        spec:
+            replicas: 1
+            selector:
+                matchLabels:
+                    app: demoapp
+            strategy: {}
+            template:
+                metadata:
+                    creationTimestamp: null
+                    labels:
+                        app: demoapp
+                spec:
+                    containers:
+                    - image: ikubernetes/demaopp:v1.0
+                        name: demaopp
+                        resources: {}
+        status: {}
+
+
+            ~# kubectl api-versions
+            admissionregistration.k8s.io/v1
+            apiextensions.k8s.io/v1
+            apiregistration.k8s.io/v1
+            apps/v1
+            authentication.k8s.io/v1
+            authorization.k8s.io/v1
+            autoscaling/v1
+            autoscaling/v2
+            batch/v1
+            certificates.k8s.io/v1
+            coordination.k8s.io/v1
+            discovery.k8s.io/v1
+            events.k8s.io/v1
+            flowcontrol.apiserver.k8s.io/v1beta2
+            flowcontrol.apiserver.k8s.io/v1beta3
+            networking.k8s.io/v1
+            node.k8s.io/v1
+            policy/v1
+            rbac.authorization.k8s.io/v1
+            scheduling.k8s.io/v1
+            storage.k8s.io/v1
+            storage.k8s.io/v1beta1
+            v1   
+
+        列出资源类型：Kind
+            kubectl api-resources 
+
+                --api-group=GROUP_NAME 
+
+        特定资源类型的格式：
+            apiVersion 
+            kind 
+            metadata
+            spec: {}
+            status: {}
+
+            kubectl create deployment demoapp --image=ikubernetes/demoapp:v1.0 --dry-run=client -o yaml
+            kubectl create service nodeport demoapp --tcp=80:80 --dry-run=client -o yaml
+
+            kubectl explain Kind.spec 
+
+回顾： 
+    使用Kubernetes编排运行应用，基于其声明式API编写资源配置，再资源配置提交给API Server；
+
+    资源规范：
+        五个一级字段：
+            apiVersion 
+            kind 
+
+            metadata:
+                name: 
+                namespace: 
+
+            spec: {}
+
+            status: {}
+
+    调试相关的命令：
+        kubectl exec 
+        kubectl logs 
+        kubectl get TYPE NAME -o {wide|yaml|json|jsonpath}
+
+        kubectl describe TYPE NAME 
+
+        kubectl debug 
+
+Pod： 
+    隶属关系：
+        应该由某个工作负载型控制器资源进行管控
+            创建、更新、扩缩容
+        
+        Pod自身也是标准的API资源类型，允许用户直接创建，称为自主式Pod
+
+    imagePullPolicy
+        Never 
+        IfNotPresent: 
+            Image Tag: 
+                repostory:tag 
+                    tag: latest 
+        Always
+
+    指令式命令创建自主式Pod：
+        kubectl run client-$RANDOM --image=ikubernetes/admin-box:v1.2 -it --rm --restart=Never --command -- /bin/bash
+
+    快速生成自主Pod的资源配置文件：
+        kubectl run NAME --image=ikubernetes/admin-box:v1.2 --restart=Never --dry-run=client -o yaml > /PATH/TO/FILE.yaml 
+
+
+    容器级的常用配置
+        指定要运行的应用程序：
+            command 
+            args 
+        传递环境变量：
+            env 
+
+    Pod级的常用配置：
+        hostNetwork
+            true：直接共享宿主机的Network名称空间
+
+        hostAliases: 给Pod内的/etc/hosts生成解析记录
+
+        探针三种模式：
+            StartupProbe: 容器启动时进行探测，检测容器应用成功启动的状态；成功启动即退出；
+            LivenessProbe：存活状态检测，从StartupProbe之后开始，周期性探测；失败会导致容器重启，取决于restartPolicy
+            ReadinessProbe：就绪状态检测，从StartupProbe之后开始，周期性探测；失败会导致其Service不再将该Pod作为可用的后端端点
+
+            探针类型：
+                Exec 
+                TcpSocket
+                HTTPGet
+
+以指定用户的身份运行Pod内的容器：
+# Maintainer: MageEdu <mage@magedu.com>
+# # URL: http://www.magedu.com
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: securitycontext-runasuser-demo
+  namespace: default
+spec:
+  containers:
+  - name: demo
+    image: ikubernetes/demoapp:v1.0
+    imagePullPolicy: IfNotPresent
+    env:
+    - name: PORT
+      value: "8080"
+    securityContext:
+      runAsUser: 1001
+      runAsGroup: 1001   
+
+
+    资源需求和资源限制
+        限制：
+            cpu: cores 
+                m: 1/1000 cores 
+                    500m
+
+                    4cpu, 500m
+                        4 * 12.5% 
+                    实际的CPU占用率
+
+            内存：
+                Ki 
+                Mi 
+                Gi 
+
+        资源需求会影响调度度器的调度决策
+
+
+                     
+
+
+
+    
+作业：
+    1、基于自主式Pod创建并运行MySQL，传递环境变量自动创建数据库及其用户；
+    2、基于自主式Pod创建并运行Wordpress，传递环境变量引用MySQL；
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mydb
+  namespace: default
+spec:
+  containers:
+  - name: mysql
+    image: mysql:8.0
+    env:
+    - name: MYSQL_RANDOM_ROOT_PASSWORD
+      value: "1"
+    - name: MYSQL_DATABASE
+      value: wpdb
+    - name: MYSQL_USER
+      value: wpuser
+    - name: MYSQL_PASSWORD
+      value: magedu.com
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: wordpress
+  namespace: default
+spec: 
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  containers:
+  - name: wordpress
+    image: wordpress:5.7
+    env:
+    - name: WORDPRESS_DB_HOST
+      value: mysql
+    - name: WORDPRESS_DB_NAME
+      value: wpdb
+    - name: WORDPRESS_DB_USER
+      value: wpuser
+    - name: WORDPRESS_DB_PASSWORD
+      value: magedu.com
+    securityContext:
+      capabilities:
+        add: ['NET_ADMIN']
+        #drop: ['CHOWN']
+
+    3、为上述示例中的普通用户开放监听80端口的能力；
+
+    4、为Master提供高可用的负载均衡器；
+
+
+
+
+
+
+
+
+
+
+

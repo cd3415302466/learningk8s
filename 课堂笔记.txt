@@ -1,0 +1,224 @@
+
+
+分布式服务治理框架
+    Spring Cloud 
+        Spring Cloud Netflix
+        Spring Cloud Alibaba
+        Spring Cloud 
+    Dubbo
+
+    不可变基础设施
+
+容器编排
+    DOcker:
+        Swarm, Machine, Compose 
+    Mesos： DC/OS
+        Marathon
+    Kubernetes：
+        Borg
+
+软件架构：
+    单体应用 --> 分层架构（MVC）--> 垂直切分（小单体）--> 分布式SOA --> 微服务（单一职能）--> Function
+
+分布式应用：
+    A --> B --> C --> D 
+
+    应对网络的不可靠性：
+        服务注册、服务发现
+        负载均衡
+        超时/重试/限流/熔断
+        ……
+    
+        SDK
+    
+    微服务的服务治理框架
+        Spring Cloud Netflix/Alibaba
+    
+        Service Mesh：服务网格
+            Istio
+
+
+    应用容器：交付的形式Image
+        容器编排系统：
+            Kubernetes
+    
+            Docker:
+                Docker Engine
+                Containerd --> CNCF（Cloud Native Computing Fundation）
+                RunC
+    
+                EE --> Mirantis
+    
+            CoreOS --> RedHat --> IBM
+    
+    命令式编程：参与每个处理
+    声明式编程：终态声明，具体的实现过程，有一个底层程序自动完成
+        API: RESTful 
+    
+        Deployment: 部署
+            API
+            Controller 
+    
+            Wordpress: 5
+                1000 * 5 * 80% 
+                20%
+    
+        HorizontalPodAutoScaler
+            API
+            Controller 
+    
+        Service: 服务发现 和 负载均衡
+            API 
+            Controller 
+    
+    Kubernetes组件：
+        Master
+            API Server
+                声明式API接口的服务入口
+            Scheduler
+            Controller Manager
+            Etcd
+        Worker 
+            Kubelet 
+            Kube Proxy 
+                iptables
+                ipvs 
+        AddOns
+            Network Plugin:
+                Flannel
+                ProjectCalico
+                Cilium
+                WeaveNet
+                ...
+            Cluster DNS：
+                SkyDNS
+                KubeDNS
+                CoreDNS
+    
+            Ingress Controller:
+                Ingress Nginx
+                Traefik
+                Contour
+                Kone
+                Gloo
+                APISIX Ingress
+                ...
+    
+            Dashboard:
+                Kubernetes Dashboard 
+                Kuboard
+                ...
+    
+            Metrics:
+                Prometheus
+    
+            Logs：
+                ELK
+                PLG 
+    
+    应用编排的基本逻辑：
+        基于某个工作负载型控制器，创建一个同名的资源
+            Deployment
+                Nginx： 3 
+            StatefulSet
+            DaemonSet
+    
+        为由工作负载型控制器编排运行一的一组Pod添加一个Server
+            提供服务发现，负载均衡
+
+
+​        
+
+        Kubernetes： go编写，开源，CNCF第一个产品
+    
+            landscape.cncf.io
+    
+    Kubernetes组件的镜像仓库：
+        k8s.gcr.io --> registry.k8s.io
+    
+    部署kubectl、kubelet和kubeadm
+    
+        apt-get update && apt-get install -y apt-transport-https
+    
+        curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - 
+    
+        cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+        deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
+        EOF
+    
+        apt-get update
+    
+        apt-get install -y kubelet kubeadm kubectl
+
+  ~# kubeadm init --control-plane-endpoint="kubeapi.magedu.com" -kubernetes-version=v1.26.1 \
+        --pod-network-cidr=10.244.0.0/16 \
+        --service-cidr=10.96.0.0/12 \
+        --token-ttl=0 \
+        --cri-socket unix:///run/cri-dockerd.sock \
+        --upload-certs \
+        --image-repository=registry.aliyuncs.com/google_containers
+        
+ 667  kubectl create deployment nginx --image=nginx:1.22-alpine --replicas=1
+  668  kubectl get pods
+  669  kubectl get pods -o wide
+  670  curl 10.244.5.2
+  671  kubectl create service --help
+  672  kubectl create service nodeport --help
+  673  kubectl create service nodeport nginx --tcp=80:80
+  674  kubectl get services
+
+  678  kubectl create deployment demoapp --image=ikubernetes/demoapp:v1.0 --replicas=2
+  679  kubectl get pods
+  680  kubectl get pods -o wide
+
+
+  684  kubectl create service nodeport demoapp --tcp=80:80
+  685  kubectl get pods
+
+  688  clear
+  689  kubectl get pods
+  690  kubectl scale deployment demoapp --replicas=5
+  691  kubectl get pods
+  692  kubectl get pods -o wide
+  693  kubectl scale deployment demoapp --replicas=3
+  694  kubectl get pods -o wide
+  695  clear
+  696  ls
+
+  700  ls
+  701  kubectl apply -f mysql-ephemeral/
+  702  kubectl get pods
+  703  kubectl get pods -w
+  704  kubectl get pods -o wide -w
+  705  kubectl exec -it mysql-58bfc8ff6-2np4w  -- /bin/sh
+
+  714  clear
+  715  cd
+  716  docker image ls
+  717  docker image save registry.k8s.io/pause:3.6 -o pause-3.6.tar
+  718  ls
+  719  docker image load -i ./pause-3.6.tar 
+
+    作业：
+        1、部署Kubernetes集群；
+        2、部署Wordpress并访问，完成初始化；
+
+
+​    
+
+```
+ echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+
+
+
+
+
+
+代理
+
+
+
