@@ -5,6 +5,8 @@
 nfs服务器安装
 
 ```shell
+[root@k8s-master01 csi-driver-nfs]#mkdir /data/redis00{1,2} -pv
+
 apt install nfs-kernel-server -y
 
 vim /etc/exportfs

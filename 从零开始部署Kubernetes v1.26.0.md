@@ -94,7 +94,7 @@ vim /etc/hosts
 10.0.0.102	k8s-master02.magedu.com k8s-master02
 10.0.0.103	k8s-master03.magedu.com k8s-master03
 10.0.0.111	k8s-node01.magedu.com k8s-node01
-10.0.0.112	k8s-node02.magedu.com k8s-node02
+10.0.0.112	k8s-node02.magedu.com k8s-node02 
 10.0.0.113	k8s-node03.magedu.com k8s-node03
 
 
