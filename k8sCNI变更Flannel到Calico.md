@@ -57,7 +57,7 @@ kubeadm join kubeapi.magedu.com:6443 --token 32hb2t.pneh4vhqtmqpqop5 \
 ```bash
 create deployment demoapp --image ikubernetes/demoapp:v1.0 --replicas=6
 #添加测试pod
-kubectl run client-$RANDOM --image ikubernetes/admin-box:v1.2 --restart=Never -it --commond -- /bin/sh
+kubectl run client-$RANDOM --image ikubernetes/admin-box:v1.2 --restart=Never -it --command -- /bin/sh
 ```
 
 变更网络插件后

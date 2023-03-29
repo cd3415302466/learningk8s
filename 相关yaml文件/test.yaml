@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: client-30908
+  name: client-30908
+spec:
+  serviceAccountName: dashuser
+  containers:
+  - image: ikubernetes/admin-box:v1.2
+    name: client-30908
+    command: ['/bin/sh','-c','sleep 999999']
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
